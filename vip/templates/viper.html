@@ -1,0 +1,299 @@
+{% from tornado.escape import url_escape%}
+<!doctype html>
+<html lang="en">
+
+<head>
+<title>{% block title %}Default title{% end %}</title>
+<meta charset="utf-8">
+<script src="{{static_url('jquery-3.2.1.min.js')}}"></script>
+<link rel="stylesheet" href="{{static_url('myapp.css')}}">
+
+<body>
+
+{% block title %}{{page['header']['title']}}{% end %}
+
+{% block body %}
+<body class="Site">
+
+
+
+
+<main class="Site-content">
+<div>{{None}}</div>
+
+<div class="Page-stuff">
+    <a id="addr"  href="{{page['header']['addr']}}">{{page['header']['addr']}}</a>
+    <button class="Button bookmark" type="button" data-link='{{page['header']['addr']}}' class="bookmark" >Bookmark</button>
+    
+</div>
+
+
+<div class="block">
+    {% for p in page['paginate_list'] %}
+    <a href="{{url_escape(p['href'])}}"> {{p['title']}}</a>
+    {% end %}
+</div>
+
+
+
+
+{% for post in page['post_list'] %}
+<div class="post-item">
+    <div>
+        <div>
+            {{post['title']}}
+            {% for q in post['quote'] %}
+            {{q}}
+            {% end %}
+        </div>
+        <select class="filenames">
+            <option value="{{post['title']}}">{{post['title']}}</option>
+            {% for q in post['quote'] %}
+            <option value="{{q}}">{{q}}</option>
+            {% end %}
+        </select>
+        <input class="optionalloc" type="entry" name="saveloc">
+        <select class="direction">
+            <option value="1">New Tab</option>
+            <option value="2">List</option>
+            <option value="4">File</option>
+            <option value="5">Tab File</option>
+        </select>
+        <input class="post-resize" type="checkbox" name="resize" value="true" checked>resize</b>
+    </div>
+    <div>
+    {% try %}
+    {% for atag in post['atag_list'][:4] %}
+        <a class="thumb" data-href="{{atag['href']}}">
+            <img src="{{atag['src']}}">
+        </a> 
+    {% end %}
+    {% for atag in post['atag_list'][4:] %}
+        <a class="thumb hidden" data-src="{{atag['src']}}" data-href="{{atag['href']}}"></a>
+    {% end %}
+    {% except %}
+    {% for atag in post['atag_list'] %}
+        <a class="thumb" data-href="{{atag['href']}}">
+            <img src="{{atag['src']}}">
+        </a> 
+    {% end %}
+    {% end %}
+    <button onclick="expand($(this))">reveal</button>
+    <a href="javascript:void(0)" class="testaval">[Test]</a>
+    <a href="javascript:void(0)" class="AddDownload">[Get All]</a>
+
+    </div>
+</div>
+</br>
+{% end %}
+
+
+</main>
+
+<script>
+// function get_saveloc(parent){
+//     parent.find('.saveloc_option')
+//     $( "saveloc_option option:selected" ).text()
+// }
+
+function expand(e){
+    var parent = e.parents('.post-item');
+    var hidden_list = parent.find('a.hidden');
+    e.hide()
+    hidden_list.each(function(){
+        var src = $(this).data('src')
+        $(this).html("<img src="+src+">")
+    });
+}
+
+function get_all(atag){
+    var parent = atag.parents('.post-item');
+    atag.text('...')
+    // var num = parent.find('.post-timeout')[0].valueAsNumber;
+    // console.log(num)
+    parent.find('a.thumb').each(function(index){
+        var that = $(this)
+        that.trigger("click");
+        // console.log(that.length);
+        // setTimeout($(this).trigger("click"), 10000);
+        // setTimeout(function(){
+        //     // console.log(that);
+        //     that.trigger("click");
+        // }, index*num*1000);
+    });
+    atag.text('[done]')
+    // $.playSound("http://www.noiseaddicts.com/samples_1w72b820/3722")
+}
+
+function custom_click(addr, saveloc, noredirect=true, resize=true ){
+
+};
+
+    $(document).ready(function () {
+        $('.AddDownload').click(function (event) {
+            $(event.target).text('...')
+            var parent = $(this).parents('.post-item');
+            //optional
+            var filename = parent.find('.filenames').val();
+            optional = parent.find('.optionalloc').val();
+            if (optional != ''){
+                filename += (' ' + optional)
+            }
+            var sourceurl = window.location.href
+            var thumbs = parent.find('.thumb');
+            var links = $.map(thumbs, function(t, i){
+                return $(t).data('href');
+            })
+            $.ajax(
+                    {
+                        url: '/set',
+                        type: 'POST',
+                        data: JSON.stringify({'sourceurl':sourceurl, 'filename':filename, 'links':links}),
+
+                        success: function (jsonResponse) {
+                            var objresponse = JSON.parse(jsonResponse);
+                            console.log(objresponse['status']);
+                            $(event.target).text('!added!');
+                            // $(event.target).css('visibility','hidden');
+
+                        },
+                        error: function () {
+                            $(event.target).text('Failed');
+
+                        }
+                    });
+
+        });
+
+        $('.bookmark').click(function (event) {
+            var data =
+            {
+                href: $(event.target).data('link'),
+                title: '{{page['header']['title']}}'
+            };
+            $.ajax(
+                    {
+                        url: '/p/bookmark/ugh',
+                        type: 'POST',
+                        data: JSON.stringify(data),
+
+                        success: function (jsonResponse) {
+                            var objresponse = JSON.parse(jsonResponse);
+                            // console.log(objresponse['status']);
+                            $(event.target).text(objresponse.status);
+                            $(event.target).prop('disabled', true);
+
+                        },
+                        error: function () {
+                            $(event.target).text('Failed');
+
+                        }
+                    });
+
+            event.preventDefault();
+        });
+
+
+        $(".thumb").each(function(){
+            $(this).on('click', function(e){
+                var sendobj = {}
+                sendobj['ra'] = $(this).data('href');
+                var tag = $(this)
+                tag.find('img').addClass('thumb-visited')
+                // var fname = null;
+                var parent = $(this).parents('.post-item');
+
+                //file name
+                sendobj['se'] = parent.find('.filenames').val();
+
+                optional = parent.find('.optionalloc').val();
+                if (optional != ''){
+                    sendobj['se'] += ('_' + optional)
+                }
+
+                sendobj['sourceurl'] = ''
+                // sendobj['priority'] = parent.find('.priority').val();
+
+
+                //direction type
+                sendobj['di'] = parseInt(parent.find('.direction').val());
+
+                var resize = parent.find('.post-resize');
+                if (resize.is(':checked')){
+                        sendobj['resize'] = true;
+                }else{
+                        sendobj['resize'] = false
+                }
+                
+                console.log(sendobj)
+
+                if ( sendobj['di']=='file'){
+                    $.post('/raw2', JSON.stringify(sendobj) ,function(data){
+                        console.log(data)
+                        tag.find('img').removeClass('thumb-visited').addClass('thumb-changed')
+                        tag.find('div.tint').addClass('tint-ok')
+                    }).fail(function(){
+                        tag.find('img').removeClass('thumb-visited').addClass('thumb-changed')
+                        tag.find('div.tint').addClass('tint-err')
+                    });
+                }
+                else if (sendobj['di']=='list' ){
+                    $.post('/raw2', JSON.stringify(sendobj) ,function(data){
+                        console.log(data)
+                        tag.find('img').removeClass('thumb-visited').addClass('thumb-changed')
+                        tag.find('div.tint').addClass('tint-ok')
+                    }).fail(function(){
+                        tag.find('img').removeClass('thumb-visited').addClass('thumb-changed')
+                        tag.find('div.tint').addClass('tint-err')
+                    });
+                }else{
+                     var form = document.createElement("form");
+                     form.method = "POST";
+                     form.action = '/raw2?' + JSON.stringify(sendobj);
+                     form.target = "_blank";
+                     document.body.appendChild(form);
+                     form.submit();
+                    // var url = $(this).attr('href');
+                    // var a = document.createElement("a");
+                    // a.href = '/raw2?' + JSON.stringify(sendobj);
+                    // var evt = document.createEvent("MouseEvents");
+                    
+                    // evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, true, false, false, false, 0, null);
+                    // a.dispatchEvent(evt);
+                }
+
+                e.preventDefault();
+                return false;
+            });
+        });
+        $('.testaval').click(function (event) {
+            $(event.target).text('...')
+            var parent = $(this).parents('.post-item');
+            var first = parent.find(".thumb").first().data('down');
+            $.ajax(
+                    {
+                        url: '/check',
+                        type: 'POST',
+                        data: JSON.stringify({'sample':first}),
+
+                        success: function (jsonResponse) {
+                            var objresponse = JSON.parse(jsonResponse);
+                            $(event.target).text(objresponse['status']);
+
+                        },
+                        error: function () {
+                            $(event.target).text('Failed');
+
+                        }
+                    });
+
+        });
+    });
+    
+
+</script>
+
+{% end %}
+</body>
+
+</html>
