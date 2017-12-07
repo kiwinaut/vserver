@@ -64,18 +64,18 @@
     <div>
     {% try %}
     {% for atag in post['atag_list'][:4] %}
-        <a class="thumb" data-href="{{atag['href']}}">
+        <a class="thumb" href="javascript:void(0)" data-href="{{atag['href']}}">
             <div class="tint">
                 <img src="{{atag['src']}}"/>
             </div>
         </a>
     {% end %}
     {% for atag in post['atag_list'][4:] %}
-        <a class="thumb hidden" data-src="{{atag['src']}}" data-href="{{atag['href']}}"></a>
+        <a class="thumb hidden" href="javascript:void(0)" data-src="{{atag['src']}}" data-href="{{atag['href']}}"></a>
     {% end %}
     {% except %}
     {% for atag in post['atag_list'] %}
-        <a class="thumb" data-href="{{atag['href']}}">
+        <a class="thumb" href="javascript:void(0)" data-href="{{atag['href']}}">
             <div class="tint">
                 <img src="{{atag['src']}}">
             </div>
@@ -106,7 +106,7 @@ function expand(e){
     e.hide()
     hidden_list.each(function(){
         var src = $(this).data('src')
-        $(this).html("<<div class='tint'>><img src="+src+"></div>")
+        $(this).html("<div class='tint'><img src="+src+"></div>")
     });
 }
 
@@ -201,27 +201,24 @@ function custom_click(addr, saveloc, noredirect=true, resize=true ){
 
 
         $(".thumb").each(function(){
-            $(this).on('click', function(e){
-                var sendobj = {}
-                sendobj['ra'] = $(this).data('href');
+            $(this).mousedown(function(e){
                 var tag = $(this)
+                var raw = tag.data('href');
                 tag.find('img').addClass('thumb-visited')
-                var parent = $(this).parents('.post-item');
+                var parent = tag.parents('.post-item');
 
                 //file name
-                sendobj['se'] = parent.find('.filenames').val();
+                var set = parent.find('.filenames').val();
 
                 optional = parent.find('.optionalloc').val();
                 if (optional != ''){
-                    sendobj['se'] += ('_' + optional)
+                    set += ('_' + optional)
                 }
 
-                sendobj['sourceurl'] = ''
+                var source = ''
                 // sendobj['priority'] = parent.find('.priority').val();
-
-
                 //direction type
-                sendobj['di'] = parseInt(parent.find('.direction').val());
+                var direction = parseInt(parent.find('.direction').val());
 
                 var resize = parent.find('.post-resize');
                 if (resize.is(':checked')){
@@ -229,45 +226,11 @@ function custom_click(addr, saveloc, noredirect=true, resize=true ){
                 }else{
                         sendobj['resize'] = false
                 }
-                
-                console.log(sendobj)
-
                 if ( (sendobj['di'] & 1) == 1 ){
-                    // tag.find('span').addClass('tint-ok')
-                     // var form = document.createElement("form");
-                     // form.method = "GET";
-                     // form.action = '/raw2?'+'ra='+escape(sendobj['ra'])+';di='+sendobj['di'].toString()+';se='+escape(sendobj['se'])+';so=' ; 
-                     // form.target = "_blank";
-                     // document.body.appendChild(form);
-                     // console.log(form.action)
-                     // form.submit();
-                    // var url = $(this).attr('href');
-                    // console.log(url)
-                    var a = document.createElement("a");
-                    a.href = '/raw2?'+'ra='+escape(sendobj['ra'])+';di='+sendobj['di'].toString()+';se='+escape(sendobj['se'])+';so=' ;
-                    var evt = document.createEvent("MouseEvents");
-                    var evt =  new MouseEvent('click', {
-                        view: window,
-                        bubbles: true,
-                        cancelable: true,
-                      });
-                    a.dispatchEvent(evt);
-                    // var evt = document.createEvent("MouseEvents");
-                    //   evt.initMouseEvent("click", true, true, window,
-                    //     0, 0, 0, 0, 0, false, false, false, false, 0, null);
-                    //   var canceled = !a.dispatchEvent(evt);
-                      }
-                // else if ((sendobj['di'] & 1) == 1 ){
-                //     $.post('/raw2', JSON.stringify(sendobj) ,function(data){
-                //         console.log(data)
-                //         tag.find('img').removeClass('thumb-visited').addClass('thumb-changed')
-                //         tag.find('div.tint').addClass('tint-ok')
-                //     }).fail(function(){
-                //         tag.find('img').removeClass('thumb-visited').addClass('thumb-changed')
-                //         tag.find('div.tint').addClass('tint-err')
-                //     });
-                // }
-                else{
+                    this.href = '/raw2?'+'ra='+escape(raw)+';di='+direction.toString()+';se='+escape(set)+';so='+escape(source)+';re='+resize.toString();
+                }else{
+                    this.href = "javascript:void(0)";
+                    var sendobj = {ra:raw, di:direction, se:set, so:source, re:resize}
                     $.post('/raw2', JSON.stringify(sendobj) ,function(data){
                         console.log(data)
                         tag.find('a').addClass('tint-ok')
@@ -277,18 +240,7 @@ function custom_click(addr, saveloc, noredirect=true, resize=true ){
                         tag.find('img').removeClass('thumb-visited').addClass('thumb-changed')
                         tag.find('div.tint').addClass('tint-error')
                     });
-                    // htmlEncode()
-                    // var url = $(this).attr('href');
-                    // var a = document.createElement("a");
-                    // a.href = '/raw2?' + JSON.stringify(sendobj);
-                    // var evt = document.createEvent("MouseEvents");
-                    
-                    // evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, true, false, false, false, 0, null);
-                    // a.dispatchEvent(evt);
                 }
-
-                e.preventDefault();
-                return false;
             });
         });
         $('.testaval').click(function (event) {

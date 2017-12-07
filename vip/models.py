@@ -16,6 +16,7 @@ class DownList(BaseModel):
     set = CharField()
     uid = CharField()
     source = CharField()
+    status = CharField(null=True)
 
 class Bookmarks(BaseModel):
     url = CharField()
@@ -23,6 +24,6 @@ class Bookmarks(BaseModel):
     date = DateTimeField(default=datetime.now())
 
 if not DownList.table_exists():
-    db.connect()
+    # db.connect()
     db.create_tables([DownList, Bookmarks])
     db.close()

@@ -1,0 +1,36 @@
+html *
+{
+   font-size: 11px !important;
+   color: #000 !important;
+   font-family: IBM Plex Serif !important;
+}
+
+.success-response{
+	background: green;
+	color: white;
+	padding: 1px;
+}
+
+.error-response{
+	background: red;
+	color: white;
+	padding: 1px;
+}
+
+.tint{
+	display:inline-block;
+}
+
+.tint-ok{
+	background: rgba(0,255,255, 0.5);
+}
+
+.tint-error{
+	background: rgba(255,0,0, 0.5);
+
+}
+
+.thumb-visited{
+    -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+    filter: grayscale(100%);
+}
