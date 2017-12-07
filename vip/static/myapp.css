@@ -17,20 +17,19 @@ html *
 	padding: 1px;
 }
 
-.tint{
-	display:inline-block;
-}
+
 
 .tint-ok{
-	background: rgba(0,255,255, 0.5);
+	filter: sepia(1) hue-rotate(90deg);
+	border : 2px solid green;
 }
 
 .tint-error{
-	background: rgba(255,0,0, 0.5);
-
+	filter: sepia(1) hue-rotate(-90deg);
+	border : 2px solid red;
 }
 
 .thumb-visited{
-    -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
     filter: grayscale(100%);
+	border : 2px solid grey;
 }

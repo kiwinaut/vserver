@@ -16,6 +16,7 @@ class DownList(BaseModel):
     set = CharField()
     uid = CharField()
     source = CharField()
+    resize = BooleanField(default=True)
     status = CharField(null=True)
 
 class Bookmarks(BaseModel):

@@ -9,6 +9,7 @@ class ConfigManager(object):
     def __init__(self):
         self.defaults = {
             'database.path': '%s/.cache/vip.db' % HOME,
+            'server.port': 8000,
         }
         self.config = {}
         self.options = {}
@@ -17,11 +18,15 @@ class ConfigManager(object):
     def parse(self):
         parser = argparse.ArgumentParser(description='vip server', prog='vip')
         parser.add_argument('--test', action="store_true", help="Use Test Files")
+        parser.add_argument('-p', '--port', type=int, metavar='8000', help="Port")
 
         args = parser.parse_args()
         self.options['dev'] = args.test
         if args.test:
             self.options['database.path'] = ':memory:'
+        if args.port:
+            self.options['server.port'] = args.port
+
 
 
     def __setitem__(self, key, value, config=True):
