@@ -4,7 +4,7 @@ from tornado import ioloop
 from tornado import httpserver
 # from tornado import template
 
-from tornado.escape import json_decode, json_encode, url_unescape, url_escape
+from tornado.escape import json_decode, json_encode, url_unescape, url_escape, to_unicode
 
 from concurrent.futures import ThreadPoolExecutor
 from tornado.concurrent import run_on_executor
@@ -88,20 +88,26 @@ class RawPageHandler(web.RequestHandler):
                 d.download()
         except SoupFindError as e:
             self.write(str(e))
+            print(e)
         except ServerHandlerError as e:
             self.write(str(e))
- 
+            print(e)
+        except Exception as e:
+            self.write(str(e))
+            print(e)
+
     @gen.coroutine
     def get(self):
         # try:
         try:
+            print(self.request)
             direction = int(self.get_argument('di'))
             raw = url_unescape(self.get_argument('ra'))
             resize = bool(int(self.get_argument('re', '1')))
             source = urlparse(self.get_argument('so')).path
             # host = self.request.host
             # method = self.request.method
-            set = url_unescape(self.get_argument('se'))
+            set = url_unescape(to_unicode(self.get_argument('se')))
         except web.MissingArgumentError as e:
             self.write(str(e))
             self.finish()
